@@ -13,17 +13,11 @@ console.log(`Result 1: ${part1}`);
 // Part 2
 const frequencies = new Set();
 let freq = 0;
-for (let i = 0; i < changes.length; i++) {
+let i = 0;
+while (true) {
   freq += changes[i];
-
-  if (frequencies.has(freq)) {
-    console.log(`Result 2: ${freq}`);
-    process.exit();
-  }
-
+  if (frequencies.has(freq)) break;
   frequencies.add(freq);
-  
-  if (i === changes.length - 1) {
-    i = -1;
-  }
+  i = (i + 1) % changes.length;
 }
+console.log(`Result 2: ${freq}`);
