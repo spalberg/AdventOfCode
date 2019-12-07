@@ -1,10 +1,3 @@
-// @ts-ignore
-const input: string = require('fs')
-  .readFileSync('./input.txt')
-  .toString();
-
-const tape = input.split(',').map(n => parseInt(n, 10));
-
 function processInstruction(
   instruction: number,
   tape: number[],
@@ -22,9 +15,12 @@ function processInstruction(
   return { opcode, parameters };
 }
 
-function processTape(tape: number[], inputs: number[]): number[] {
-  let position = 0;
-  const output = [];
+export function processTapeUntilOutput(
+  position: number,
+  tape: number[],
+  inputs: number[],
+  output: number[],
+) {
   while (true) {
     const { opcode, parameters } = processInstruction(
       tape[position],
@@ -33,7 +29,7 @@ function processTape(tape: number[], inputs: number[]): number[] {
     );
     switch (opcode) {
       case 99:
-        return output;
+        return { position, output, halted: true };
       case 1:
         tape[tape[position + 3]] = parameters[0] + parameters[1];
         position += 4;
@@ -49,7 +45,7 @@ function processTape(tape: number[], inputs: number[]): number[] {
       case 4:
         output.push(parameters[0]);
         position += 2;
-        continue;
+        return { position, output, halted: false };
       case 5:
         position = parameters[0] != 0 ? parameters[1] : position + 3;
         continue;
@@ -70,8 +66,43 @@ function processTape(tape: number[], inputs: number[]): number[] {
   }
 }
 
-const output1 = processTape(tape.slice(), [1]);
-console.log(`Part 1: ${output1.pop()}`);
+export function processTape(tape: number[], inputs: number[]): number[] {
+  let position = 0;
+  let output = [];
 
-const output2 = processTape(tape.slice(), [5]);
-console.log(`Part 2: ${output2.pop()}`);
+  while (true) {
+    const {
+      halted,
+      output: newOutput,
+      position: newPosition,
+    } = processTapeUntilOutput(position, tape, inputs, output);
+    position = newPosition;
+    output = newOutput;
+
+    if (halted) {
+      return output;
+    }
+  }
+}
+
+export function getTape() {
+  // @ts-ignore
+  const input: string = require('fs')
+    .readFileSync('./input.txt')
+    .toString();
+
+  return input.split(',').map(n => parseInt(n, 10));
+}
+
+function solvePart1() {
+  const output1 = processTape(getTape(), [1]);
+  console.log(`Part 1: ${output1.pop()}`);
+}
+
+function solvePart2() {
+  const output2 = processTape(getTape(), [5]);
+  console.log(`Part 2: ${output2.pop()}`);
+}
+
+// solvePart1();
+// solvePart2();
